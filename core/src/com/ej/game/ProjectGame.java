@@ -9,6 +9,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class ProjectGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture background;
+	Texture chara;
+	float charaY;
+	float charaVelo = 0;
 
 	//
 	Texture background1a;
@@ -37,6 +40,9 @@ public class ProjectGame extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 
+		chara = new Texture("chara.png");
+		charaY = screenHeight / 2 - chara.getHeight() / 2;
+
 		screenHeight = Gdx.graphics.getHeight();
 		screenWidth = Gdx.graphics.getWidth();
 
@@ -53,6 +59,9 @@ public class ProjectGame extends ApplicationAdapter {
 
 
 
+
+
+
 	}
 
 
@@ -64,6 +73,13 @@ public class ProjectGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 
+
+
+		if (Gdx.input.justTouched()){
+			charaVelo = -35;
+		}
+
+
 		batch.draw(background, 0, 0, screenWidth, screenHeight);
 
 		batch.draw(background3a, b3X, 300, screenWidth + screenWidth + 200, screenHeight);
@@ -74,6 +90,16 @@ public class ProjectGame extends ApplicationAdapter {
 
 		batch.draw(background1a, b1X, 0, screenWidth + screenWidth + 200, screenHeight);
 		batch.draw(background1b, 0 + screenWidth * 2 + 175, 0, screenWidth + screenWidth + 200, screenHeight);
+
+		batch.draw(chara, screenWidth / 2 - chara.getWidth() / 2 , charaY, 350, 300);
+
+
+		if (charaY > 0 || charaVelo < 0) {
+			charaVelo = charaVelo + 2;
+			charaY = charaY - charaVelo;
+		}
+
+
 
 		batch.end();
 
@@ -87,6 +113,9 @@ public class ProjectGame extends ApplicationAdapter {
 			b2X = 0; }
 		if (b3X + screenWidth == 0){
 			b3X = 0; }
+
+        Gdx.app.log("Y : ", String.valueOf(charaY));
+		Gdx.app.log("VV : ", String.valueOf(charaVelo));
 	}
 
 
