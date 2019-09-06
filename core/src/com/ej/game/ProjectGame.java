@@ -6,12 +6,16 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.Random;
+
 public class ProjectGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture background;
 	Texture chara;
-	float charaY;
-	float charaVelo = 0;
+	private float charaY = 0;
+	private float charaVelo = 0;
+
+
 
 	//
 	Texture background1a;
@@ -35,16 +39,19 @@ public class ProjectGame extends ApplicationAdapter {
 	private float screenWidth;
 
 
+	Random randomGenerator;
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		screenHeight = Gdx.graphics.getHeight();
+		screenWidth = Gdx.graphics.getWidth();
 
 		chara = new Texture("chara.png");
 		charaY = screenHeight / 2 - chara.getHeight() / 2;
 
-		screenHeight = Gdx.graphics.getHeight();
-		screenWidth = Gdx.graphics.getWidth();
+
+
 
 		background = new Texture("fback.png");
 
@@ -61,7 +68,7 @@ public class ProjectGame extends ApplicationAdapter {
 
 
 
-
+		randomGenerator = new Random();
 	}
 
 
@@ -75,9 +82,13 @@ public class ProjectGame extends ApplicationAdapter {
 
 
 
+
+
 		if (Gdx.input.justTouched()){
 			charaVelo = -35;
 		}
+
+
 
 
 		batch.draw(background, 0, 0, screenWidth, screenHeight);
@@ -94,18 +105,27 @@ public class ProjectGame extends ApplicationAdapter {
 		batch.draw(chara, screenWidth / 2 - chara.getWidth() / 2 , charaY, 350, 300);
 
 
-		if (charaY > 0 || charaVelo < 0) {
+
+
+		if (charaY > 0 || charaVelo < 0) { // Gravity and stop after touching ground for Main character
 			charaVelo = charaVelo + 2;
 			charaY = charaY - charaVelo;
 		}
 
 
 
+
+
 		batch.end();
+
+
 
 		b1X -= b1Velocity;
 		b2X -= b2Velocity;
 		b3X -= b3Velocity;
+
+
+
 
 		if (b1X + screenWidth == 0){    // bug right here, background keeps going
 			b1X = 0; }
@@ -114,8 +134,11 @@ public class ProjectGame extends ApplicationAdapter {
 		if (b3X + screenWidth == 0){
 			b3X = 0; }
 
+
         Gdx.app.log("Y : ", String.valueOf(charaY));
 		Gdx.app.log("VV : ", String.valueOf(charaVelo));
+
+
 	}
 
 
