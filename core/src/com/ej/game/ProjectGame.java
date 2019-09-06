@@ -16,6 +16,11 @@ public class ProjectGame extends ApplicationAdapter {
 	private float charaVelo = 0;
 
 
+	//
+	Texture enemy;
+	float enemyY;
+	private float enemyX;
+	private float enemyVelo = 10;
 
 	//
 	Texture background1a;
@@ -49,6 +54,9 @@ public class ProjectGame extends ApplicationAdapter {
 
 		chara = new Texture("chara.png");
 		charaY = screenHeight / 2 - chara.getHeight() / 2;
+
+		enemy = new Texture("enemy.png");
+		enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
 
 
 
@@ -86,6 +94,7 @@ public class ProjectGame extends ApplicationAdapter {
 
 		if (Gdx.input.justTouched()){
 			charaVelo = -35;
+			enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
 		}
 
 
@@ -104,7 +113,7 @@ public class ProjectGame extends ApplicationAdapter {
 
 		batch.draw(chara, screenWidth / 2 - chara.getWidth() / 2 , charaY, 350, 300);
 
-
+		batch.draw(enemy, enemyX, enemyY, 250, 200);
 
 
 		if (charaY > 0 || charaVelo < 0) { // Gravity and stop after touching ground for Main character
@@ -123,7 +132,7 @@ public class ProjectGame extends ApplicationAdapter {
 		b1X -= b1Velocity;
 		b2X -= b2Velocity;
 		b3X -= b3Velocity;
-
+		enemyX -= enemyVelo;
 
 
 
@@ -135,9 +144,15 @@ public class ProjectGame extends ApplicationAdapter {
 			b3X = 0; }
 
 
+		if (enemyX + screenWidth == 0){
+			//enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
+			enemyY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
+
+		}
+
         Gdx.app.log("Y : ", String.valueOf(charaY));
 		Gdx.app.log("VV : ", String.valueOf(charaVelo));
-
+		Gdx.app.log("Enemy X: ", String.valueOf(enemyX));
 
 	}
 
