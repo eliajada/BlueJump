@@ -2,9 +2,14 @@ package com.ej.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
 
@@ -15,12 +20,16 @@ public class ProjectGame extends ApplicationAdapter {
 	private float charaY = 0;
 	private float charaVelo = 0;
 
+	ShapeRenderer shapeRenderer;
+	Circle enemyC;
+	Rectangle leftRect;
+
 
 	//
 	Texture enemy;
 	float enemyY;
 	private float enemyX;
-	private float enemyVelo = 10;
+	private float enemyVelo = 25;
 
 	//
 	Texture background1a;
@@ -52,6 +61,7 @@ public class ProjectGame extends ApplicationAdapter {
 		screenHeight = Gdx.graphics.getHeight();
 		screenWidth = Gdx.graphics.getWidth();
 
+
 		chara = new Texture("chara.png");
 		charaY = screenHeight / 2 - chara.getHeight() / 2;
 
@@ -75,8 +85,10 @@ public class ProjectGame extends ApplicationAdapter {
 
 
 
-
+        shapeRenderer = new ShapeRenderer();
 		randomGenerator = new Random();
+		enemyC = new Circle();
+		leftRect = new Rectangle();
 	}
 
 
@@ -94,7 +106,7 @@ public class ProjectGame extends ApplicationAdapter {
 
 		if (Gdx.input.justTouched()){
 			charaVelo = -35;
-			enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
+			enemyX = screenWidth /2 + enemy.getWidth() /2 * 2; // brings enemy back to right side
 		}
 
 
@@ -121,11 +133,27 @@ public class ProjectGame extends ApplicationAdapter {
 			charaY = charaY - charaVelo;
 		}
 
+        enemyC.set(enemyX + 125, enemyY + enemy.getHeight() / 2 - 75, enemy.getWidth() / 4);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.circle(enemyC.x, enemyC.y, enemyC.radius);
+
+        leftRect.set(0,0,25,5000);   // left rectangle end
+        shapeRenderer.rect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
+
+
+        if (Intersector.overlaps(enemyC, leftRect)){
+            enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
+            enemyY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
+        }
+
 
 
 
 
 		batch.end();
+		shapeRenderer.end();
+
 
 
 
@@ -144,15 +172,15 @@ public class ProjectGame extends ApplicationAdapter {
 			b3X = 0; }
 
 
-		if (enemyX + screenWidth == 0){
-			//enemyX = screenWidth /2 + enemy.getWidth() /2 * 2;
-			enemyY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
 
-		}
 
         Gdx.app.log("Y : ", String.valueOf(charaY));
 		Gdx.app.log("VV : ", String.valueOf(charaVelo));
 		Gdx.app.log("Enemy X: ", String.valueOf(enemyX));
+
+
+
+
 
 	}
 
