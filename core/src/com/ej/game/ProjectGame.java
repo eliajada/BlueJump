@@ -7,15 +7,20 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 import java.util.BitSet;
 import java.util.Random;
 
 import javax.swing.event.ChangeListener;
+
+import static java.lang.StrictMath.round;
 
 public class ProjectGame extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -30,12 +35,13 @@ public class ProjectGame extends ApplicationAdapter {
 	Rectangle leftRect;
 	Circle heroC;
 	Rectangle bottomRect;
+	Circle goldCoinC;
 
 
 	//
 	Texture enemy;
-	float enemyY;
-	private float enemyX;
+	private float enemyY = 0;
+	private float enemyX = 0;
 	private float enemyVelo = 10;
 
 	//
@@ -62,12 +68,24 @@ public class ProjectGame extends ApplicationAdapter {
 	private float screenWidth;
 
 	int winScore = 0;
-	BitmapFont font;
+	int coinScore = 0;
+	BitmapFont fontW;
+	BitmapFont fontC;
+	BitmapFont fontT; //for time
 
 	int gameSwitch = 0;
 
 
 	Random randomGenerator;
+
+	//Gold Coin Animation
+	private TextureAtlas goldcoinAtlas;
+	private Animation animation;
+	private float timePassed = 0;
+	float goldCoinX;
+	float goldCoinY = 0;
+
+
 
 	@Override
 	public void create () {
@@ -108,10 +126,24 @@ public class ProjectGame extends ApplicationAdapter {
 		leftRect = new Rectangle();
 		heroC = new Circle();
 		bottomRect = new Rectangle();
+		goldCoinC = new Circle();
 
-		font = new BitmapFont();
-		font.setColor(Color.RED);
-		font.getData().setScale(12);
+		fontW = new BitmapFont();
+		fontW.setColor(Color.RED);
+		fontW.getData().setScale(8);
+		fontC = new BitmapFont();
+		fontC.setColor(Color.GOLD);
+		fontC.getData().setScale(8);
+		fontT = new BitmapFont();
+		fontT.setColor(Color.WHITE);
+		fontT.getData().setScale(7);
+
+
+		//Gold Coin Animation
+		goldcoinAtlas = new TextureAtlas(Gdx.files.internal("goldcoin.atlas"));
+		animation = new Animation(1/13f, goldcoinAtlas.getRegions());
+		goldCoinX = screenWidth /2 + enemy.getWidth() /2 * 2;
+
 
 
 	}
@@ -124,6 +156,9 @@ public class ProjectGame extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
+
+
+
 
 		//BACKGROUND
 		batch.draw(background, 0, 0, screenWidth, screenHeight);
@@ -138,9 +173,12 @@ public class ProjectGame extends ApplicationAdapter {
 		batch.draw(background1b, 0 + screenWidth * 2 + 175, 0, screenWidth + screenWidth + 200, screenHeight);
 		// BACKGROUND
 
-		//GAME SWITCH 0
+
+		//GAME SWITCH 0 ----------------------------------------
 		if ( gameSwitch == 0){
 			batch.draw(startBtn, 350, 1000, startBtn.getWidth() * 3, startBtn.getHeight() * 3 );
+			batch.draw((TextureRegion) animation.getKeyFrame(timePassed, true), 200, 2300, 125, 125);
+
 
 			if (Gdx.input.justTouched()) {
 
@@ -149,20 +187,32 @@ public class ProjectGame extends ApplicationAdapter {
 			}
 		}
 
-		//GAME SWITCH 1
+
+		//GAME SWITCH 1 -----------------------------------------
 		if ( gameSwitch == 1) {
 
-			if (Gdx.input.justTouched()) {
+			timePassed += Gdx.graphics.getDeltaTime(); //time passing tracked
+
+			if (Gdx.input.justTouched() && charaY < 2300) {
 				charaVelo = -35;
 				//enemyX = screenWidth /2 + enemy.getWidth() /2 * 2; // brings enemy back to right side
 			}
 
 
-			batch.draw(enemy, enemyX, enemyY, 250, 200);  // enemy
+
 
 			batch.draw(chara, charaX, charaY, 350, 300);  // main character
 
-			font.draw(batch, String.valueOf(winScore), 100, 2250); // win score
+			batch.draw(enemy, enemyX, enemyY, 250, 200);  // enemy
+
+			batch.draw((TextureRegion) animation.getKeyFrame(timePassed, true), goldCoinX, goldCoinY, 150, 150); // gold coin
+
+			fontW.draw(batch, String.valueOf(winScore)+" x", 100, 2350); // win score
+
+			fontC.draw(batch, String.valueOf(round(coinScore)) + " x", 350, 2350);  // coin score
+
+			// fontT.draw(batch, String.valueOf(round(timePassed) * 1.00) + " x", 350, 2350); // timer
+			fontT.draw(batch, String.format("%.2f", timePassed / 60) + " t", 1200, 2350);
 
 
 			if (charaY > -20 || charaVelo < 0) { // Gravity and stop after touching ground for Main character
@@ -184,7 +234,10 @@ public class ProjectGame extends ApplicationAdapter {
 			//shapeRenderer.circle(heroC.x, heroC.y, heroC.radius);
 
 			bottomRect.set(0, 0, 5000, 25);   // left rectangle end overlay  //make X to 0 in order for it to be visible again.
-			shapeRenderer.rect(bottomRect.x, bottomRect.y, bottomRect.width, bottomRect.height);
+			//shapeRenderer.rect(bottomRect.x, bottomRect.y, bottomRect.width, bottomRect.height);
+
+			goldCoinC.set(goldCoinX + 50, goldCoinY  + 50, chara.getWidth() / 6);
+			//shapeRenderer.circle(goldCoinC.x , goldCoinC.y, goldCoinC.radius);
 
 
 			if (Intersector.overlaps(enemyC, leftRect)) {    // when Enemy intersects with leftmost side
@@ -194,12 +247,34 @@ public class ProjectGame extends ApplicationAdapter {
 
 			}
 
+
+			//on LOSE
 			if (Intersector.overlaps(enemyC, heroC) || Intersector.overlaps(heroC, bottomRect)){  // when Hero intersects with Enemy or Bottom // ON LOSING
 
 				enemyX = screenWidth / 2 + enemy.getWidth() / 2 * 2 * 2;   // reset enemy X axis (to the right most)
+                enemyY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();// randomizes enemy Y so it spawns in a different place.
 				charaY = screenHeight / 2 - chara.getHeight() / 2;		// resets hero X (to the middle)
 				gameSwitch = 0;
 				winScore = 0;
+				coinScore = 0;
+
+				goldCoinX = screenWidth / 2 * 2;
+				goldCoinY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
+
+				timePassed = 0;
+			}
+
+			if (Intersector.overlaps(goldCoinC, leftRect)){
+				goldCoinX = screenWidth / 2 * 2;
+				goldCoinY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
+
+			}
+
+			if (Intersector.overlaps(heroC, goldCoinC)){
+
+				coinScore++;
+				goldCoinX = screenWidth / 2 * 2;
+				goldCoinY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
 			}
 
 
@@ -217,6 +292,9 @@ public class ProjectGame extends ApplicationAdapter {
 		b3X -= b3Velocity;
 		float randomEnemyVelocity = 7 + randomGenerator.nextFloat() * (22 - 7);
 		enemyX -= randomEnemyVelocity ;
+		//enemyY -= 50 + randomGenerator.nextFloat() * (200 - 50);
+		//enemyY += 50 + randomGenerator.nextFloat() * (200 - 50) ;
+		goldCoinX -= 7;
 
 
 
@@ -226,6 +304,8 @@ public class ProjectGame extends ApplicationAdapter {
 			b2X = 0; }
 		if (b3X + screenWidth == 0){
 			b3X = 0; }
+
+
 
 
 
