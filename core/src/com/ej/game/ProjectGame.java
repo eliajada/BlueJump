@@ -2,6 +2,8 @@ package com.ej.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -82,9 +84,15 @@ public class ProjectGame extends ApplicationAdapter {
 	private TextureAtlas goldcoinAtlas;
 	private Animation animation;
 	private float timePassed = 0;
-	float goldCoinX;
+	float goldCoinX = 0;
 	float goldCoinY = 0;
 
+
+	Sound mp3Sound;
+	Sound coinCollect;
+	Sound enemyTouch;
+	Sound floorTouch;
+	Music backgroundMusic;
 
 
 	@Override
@@ -145,6 +153,14 @@ public class ProjectGame extends ApplicationAdapter {
 		goldCoinX = screenWidth /2 + enemy.getWidth() /2 * 2;
 
 
+		mp3Sound = Gdx.audio.newSound(Gdx.files.internal("jumplift.wav"));
+		coinCollect = Gdx.audio.newSound(Gdx.files.internal("coincollect.wav"));
+		enemyTouch = Gdx.audio.newSound(Gdx.files.internal("enemytouch.wav"));
+		floorTouch = Gdx.audio.newSound(Gdx.files.internal("floortouch.wav"));
+		backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("backgroundmusic.mp3"));
+		backgroundMusic.setLooping(true);
+
+
 
 	}
 
@@ -161,6 +177,8 @@ public class ProjectGame extends ApplicationAdapter {
 
 
 		//BACKGROUND
+		//backgroundMusic.play();
+
 		batch.draw(background, 0, 0, screenWidth, screenHeight);
 
 		batch.draw(background3a, b3X, 300, screenWidth + screenWidth + 200, screenHeight);
@@ -176,26 +194,36 @@ public class ProjectGame extends ApplicationAdapter {
 
 		//GAME SWITCH 0 ----------------------------------------
 		if ( gameSwitch == 0){
-			batch.draw(startBtn, 350, 1000, startBtn.getWidth() * 3, startBtn.getHeight() * 3 );
-			batch.draw((TextureRegion) animation.getKeyFrame(timePassed, true), 200, 2300, 125, 125);
+
+
+			batch.draw(startBtn, 350, 1500, startBtn.getWidth() * 3, startBtn.getHeight() * 3 );
+			//batch.draw((TextureRegion) animation.getKeyFrame(timePassed, true), 200, 2300, 125, 125);
 
 
 			if (Gdx.input.justTouched()) {
 
 				gameSwitch = 1;
-				//startBtn = new Texture("chara.png");
+
 			}
+
+
+			backgroundMusic.pause();
 		}
 
-
+//
 		//GAME SWITCH 1 -----------------------------------------
 		if ( gameSwitch == 1) {
+
+
+			backgroundMusic.play();
 
 			timePassed += Gdx.graphics.getDeltaTime(); //time passing tracked
 
 			if (Gdx.input.justTouched() && charaY < 2300) {
 				charaVelo = -35;
 				//enemyX = screenWidth /2 + enemy.getWidth() /2 * 2; // brings enemy back to right side
+
+				// mp3Sound.play();
 			}
 
 
@@ -224,7 +252,7 @@ public class ProjectGame extends ApplicationAdapter {
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 			shapeRenderer.setColor(Color.RED);
 
-			enemyC.set(enemyX + 125, enemyY + enemy.getHeight() / 2 - 75, enemy.getWidth() / 4);  // the circle overlay on enemy
+			enemyC.set(enemyX + 125, enemyY + enemy.getHeight() / 2 - 75, enemy.getWidth() / 4 - 40);  // the circle overlay on enemy
 			//shapeRenderer.circle(enemyC.x, enemyC.y, enemyC.radius);
 
 			leftRect.set(-200, 0, 8, 5000);   // left rectangle end overlay  //make X to 0 in order for it to be visible again.
@@ -236,7 +264,7 @@ public class ProjectGame extends ApplicationAdapter {
 			bottomRect.set(0, 0, 5000, 25);   // left rectangle end overlay  //make X to 0 in order for it to be visible again.
 			//shapeRenderer.rect(bottomRect.x, bottomRect.y, bottomRect.width, bottomRect.height);
 
-			goldCoinC.set(goldCoinX + 50, goldCoinY  + 50, chara.getWidth() / 6);
+			goldCoinC.set(goldCoinX + 60, goldCoinY  + 60, chara.getWidth() / 6);
 			//shapeRenderer.circle(goldCoinC.x , goldCoinC.y, goldCoinC.radius);
 
 
@@ -264,17 +292,27 @@ public class ProjectGame extends ApplicationAdapter {
 				timePassed = 0;
 			}
 
+			if (Intersector.overlaps(enemyC, heroC)) {
+				enemyTouch.play();
+			}
+			if (Intersector.overlaps(heroC, bottomRect)) {
+				floorTouch.play();
+			}
+
 			if (Intersector.overlaps(goldCoinC, leftRect)){
 				goldCoinX = screenWidth / 2 * 2;
 				goldCoinY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
 
 			}
 
-			if (Intersector.overlaps(heroC, goldCoinC)){
+
+			if (Intersector.overlaps(heroC, goldCoinC)){ // when Hero intersects with Gold Coin
 
 				coinScore++;
 				goldCoinX = screenWidth / 2 * 2;
 				goldCoinY = randomGenerator.nextFloat() * Gdx.graphics.getHeight();
+
+				coinCollect.play();
 			}
 
 
@@ -332,3 +370,5 @@ public class ProjectGame extends ApplicationAdapter {
 
 	}
 }
+
+
